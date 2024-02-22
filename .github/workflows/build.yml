@@ -20,6 +20,7 @@ on:
   push:
     branches:
       - 'master'
+      - 'testing_non_flaky'
   pull_request:
     branches:
       - 'master'
@@ -37,3 +38,15 @@ jobs:
       - name: 'Build project'
         run: |
           mvn clean install -DskipTests -Pitests
+      - name: 'Set up environment for tests'
+        run: mvn clean install -DskipTests -pl serde -am -Drat.skip || (echo "::error::Test Build failed." && exit 1)
+      - name: 'Run primary test for testObjectInspectorUtils'
+        id: run_test
+        run: mvn -pl serde test -Dtest=org.apache.hadoop.hive.serde2.objectinspector.TestObjectInspectorUtils#testObjectInspectorUtils -Drat.skip || (echo "::error::Primary Test failed." && exit 1)
+      - name: 'Run test with NonDex (100 Runs) for testObjectInspectorUtils'
+        id: run_test_nondex
+        run: |
+          mvn -pl serde edu.illinois:nondex-maven-plugin:2.1.1:nondex -Dtest=org.apache.hadoop.hive.serde2.objectinspector.TestObjectInspectorUtils#testObjectInspectorUtils -Drat.skip -DnondexRuns=100 || (echo "::error::NonDex test failed. Test is Flaky." && exit 1)
+      - name: 'Test is not Flaky.'
+        run: |
+          echo "::pass::Test testObjectInspectorUtils is not flaky."
