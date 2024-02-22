@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -563,6 +564,7 @@ public final class ObjectInspectorUtils {
         af.add(f[i]);
       }
     }
+    af.sort(Comparator.comparing(Field::getName, String.CASE_INSENSITIVE_ORDER));
     Field[] r = new Field[af.size()];
     for (int i = 0; i < af.size(); ++i) {
       r[i] = af.get(i);
